@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
-#include <math.h>
 
 struct student_imformation
 {
@@ -10,9 +9,11 @@ struct student_imformation
 };
 
 int getTotalLine() {
-	FILE* fp;
+	FILE* fp = NULL;
+	errno_t err;
 	int line = 0;
 	char c;
+
 	fopen_s(&fp, "student.txt", "r");
 	while ((c = fgetc(fp)) != EOF)
 		if (c == '\n') line++;
@@ -22,7 +23,7 @@ int getTotalLine() {
 
 void save_student(struct student_imformation stu_imf) {
 	char student_imf[1024]="";
-	sprintf_s(student_imf, sizeof(student_imf), "%d %s %d \n", getTotalLine(), stu_imf.name, stu_imf.age);
+	sprintf_s(student_imf, sizeof(student_imf), "%d %s %d \n", getTotalLine()+1, stu_imf.name, stu_imf.age);
 	printf("saved\n");
 	printf("name : %s\n", stu_imf.name);
 	printf("age : %d\n", stu_imf.age);
@@ -35,7 +36,7 @@ void save_student(struct student_imformation stu_imf) {
 
 int add_student() {
 	struct student_imformation stu_imf;
-	char col[16];
+	char col[16]="";
 	bool save = false;
 
 	while (true) {
@@ -63,7 +64,7 @@ int add_student() {
 	return 0;
 }
 
-int research_student() {
+int search_student() {
 	FILE* fp;
 	char buf[1024];
 	char ex_buf[1024]="";
@@ -115,6 +116,58 @@ int research_student() {
 	return 0;
 }
 
+int find_student() {
+	FILE* fp;
+	char buf[1024];
+	int num;
+	fopen_s(&fp, "student.txt", "r");
+
+	printf("student number: ");
+	scanf_s("%d", &num);
+
+	for (int i = 0; i < num; i++) {
+		fgets(buf, sizeof(buf), fp);
+	}
+	
+	int i = 0;
+	int j = 0;
+	int dir[4];
+	while (buf[i]) {
+		printf("%c", buf[i]);
+		if ((int)buf[i] == (int)*" ") {
+			dir[j] = i;
+			j++;
+		}
+		i++;
+	}
+	int number;
+	char name[64];
+	int age;
+	char number_[64];
+	char age_[64];
+
+	for (int i = 0; i < dir[0]; i++)
+		number_[i] = buf[i];
+
+	number = atoi(number_);
+	printf("number: %d\n", number);
+
+	for (int i = dir[0]+1; i < dir[1]; i++)
+		name[i-dir[0]-1] = buf[i];
+	name[dir[1]- dir[0] - 1] = NULL;
+	printf("name: %s\n", name);
+
+	int last_null = 0;
+	while (buf[last_null] != NULL)
+		last_null++;
+
+	for (int i = dir[1] + 1; i < last_null-2; i++)
+		age_[i-dir[1] - 1] = buf[i];
+	age = atoi(age_);
+	printf("age: %d\n", age);
+	return 0;
+}
+
 int edit_student() {
 	return 0;
 }
@@ -131,8 +184,9 @@ int main() {
 		printf("1. add student\n");
 		printf("2. remove student\n");
 		printf("3. search student\n");
-		printf("4. edit student\n");
-		printf("5. Exit\n");
+		printf("4. find student\n");
+		printf("5. edit student\n");
+		printf("6. Exit\n");
 		printf("select number: ");
 		scanf_s("%d", &select);
 		printf("------------------\n\n");
@@ -143,12 +197,15 @@ int main() {
 			remove_student();
 		}
 		else if (select == 3) {
-			research_student();
+			search_student();
 		}
 		else if (select == 4) {
-			edit_student();
+			find_student();
 		}
 		else if (select == 5) {
+			search_student();
+		}
+		else if (select == 6) {
 			break;
 		}
 		else {
