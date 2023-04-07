@@ -116,6 +116,12 @@ int search_student() {
 	return 0;
 }
 
+// read_line 함수 생성
+struct student_imformation read_line(){
+	struct student_imformation stu_imf;
+	return stu_imf;
+}
+
 int find_student() {
 	FILE* fp;
 	char buf[1024];
@@ -173,6 +179,13 @@ int edit_student() {
 }
 
 int remove_student() {
+	return 0;
+}
+
+// write file
+// 파일 확인 후 생성 
+
+int write_file(){
 	return 0;
 }
 
