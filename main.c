@@ -5,7 +5,7 @@
 // 기록 가능한 학생 수
 #define buf_lenth 100
 // 저장 가능 정보 개수
-#define inf_num 3
+#define inf_num 6
 
 // 학생 정보 구조체
 // 추가 예정: 학번, 전번, 주소
