@@ -14,6 +14,9 @@ struct student_information
 	int number;
 	char name[64];
 	int age;
+	int grade;
+	char phone[16];
+	char adress[64];
 };
 
 // 학생수
