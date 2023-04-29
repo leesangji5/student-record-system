@@ -6,6 +6,7 @@
 #define buf_lenth 100
 // 저장 가능 정보 개수
 #define inf_num 6
+#define _CRT_SECURE_NO_WARNINGS
 
 // 학생 정보 구조체
 // 추가 예정: 학번, 전번, 주소
@@ -36,11 +37,14 @@ int getTotalLine() {
 // 리스트 마지막에 학생 추가
 void save_student(struct student_information stu_inf) {
 	char student_inf[1024] = "";
-	sprintf_s(student_inf, sizeof(student_inf), "%d %s %d\n", getTotalLine() + 1, stu_inf.name, stu_inf.age);
+	sprintf_s(student_inf, sizeof(student_inf), "%d %s %d %d %s %s\n", getTotalLine() + 1, stu_inf.name, stu_inf.age, stu_inf.grade, stu_inf.phone, stu_inf.adress);
 	printf("saved\n");
-	printf("number: %d\n", getTotalLine() + 1);
+	printf("number : %d\n", getTotalLine() + 1);
 	printf("name : %s\n", stu_inf.name);
 	printf("age : %d\n", stu_inf.age);
+	printf("grade : %d\n", stu_inf.grade);
+	printf("phone : %s\n", stu_inf.phone);
+	printf("adress : %s\n", stu_inf.adress);
 
 	FILE* fp;
 	fopen_s(&fp, "student.txt", "a");
@@ -62,30 +66,31 @@ int resave(char buf[buf_lenth][1024]) {
 int add_student() {
 	struct student_information stu_inf;
 	char col[16] = "";
-	bool save = false;
 
 	while (true) {
 		printf("------------------\n");
 		printf("student name(no space): ");
-		scanf_s("%s", &stu_inf.name, 32);
+		scanf_s("%s", &stu_inf.name, 64);
 		printf("student age: ");
 		scanf_s("%d", &stu_inf.age);
+		printf("student grade: ");
+		scanf_s("%d", &stu_inf.grade);
+		printf("student phone: ");
+		scanf_s("%s", &stu_inf.phone, 16);
+		printf("student adress: ");
+		scanf_s("%s", &stu_inf.adress, 64);
 		printf("is this collect? (y or n or exit): ");
-		scanf_s("%s", &col, 16);
+
+		fflush(stdin);
+		scanf_s(" %s", &col, 16);
+		printf("------------------\n\n");
 		if (!(strcmp(col, "y")) || !(strcmp(col, "yes"))) {
-			save = true;
-			break;
+			save_student(stu_inf);
+			return 1;
 		}
 		else if (!(strcmp(col, "exit")))
-			break;
+			return 0;
 	}
-	if (save) {
-		save_student(stu_inf);
-		printf("------------------\n\n");
-		return 1;
-	}
-	printf("------------------\n\n");
-	return 0;
 }
 
 // 학생 찾기
@@ -145,12 +150,14 @@ struct student_information read_student_information(int num) {
 	char buf[1024];
 	fopen_s(&fp, "student.txt", "r");
 
+	// num번째 학생을 불러옴
 	for (int i = 0; i < num; i++)
 		fgets(buf, sizeof(buf), fp);
 
+	// 몇번째를 기준으로 나누는지
 	int i = 0;
 	int j = 0;
-	int dir[inf_num+1];
+	int dir[inf_num-1];
 	while (buf[i]) {
 		if ((int)buf[i] == (int)*" ") {
 			dir[j] = i;
@@ -158,25 +165,54 @@ struct student_information read_student_information(int num) {
 		}
 		i++;
 	}
+	// 임시 저장
 	char number_[64];
 	char age_[64];
+	char grade_[16];
+	char phone_[16];
+	char adress_[64];
 
-	for (int i = 0; i < dir[0]; i++)
-		number_[i] = buf[i];
-
-	stu_inf.number = atoi(number_);
-
-	for (int i = dir[0] + 1; i < dir[1]; i++)
-		stu_inf.name[i - dir[0] - 1] = buf[i];
-	stu_inf.name[dir[1] - dir[0] - 1] = NULL;
-
+	// 이 줄의 끝이 몇번째인지
 	int last_null = 0;
 	while (buf[last_null] != NULL)
 		last_null++;
 
-	for (int i = dir[1] + 1; i < last_null - 1; i++)
-		age_[i - dir[1] - 1] = buf[i];
+	//
+	int d = 0;
+
+	for (int i = 0; i < dir[d]; i++)
+		number_[i] = buf[i];
+	number_[dir[0]] = NULL;
+	stu_inf.number = atoi(number_);
+	d++;
+
+	// 이름을 불러오고 마지막에 null 추가
+	for (int i = 0; i < dir[d] - dir[d - 1] - 1; i++)
+		stu_inf.name[i] = buf[i + dir[d - 1] + 1];
+	stu_inf.name[dir[d] - dir[d-1]-1] = NULL;
+	d++;
+
+	for (int i = 0; i < dir[d] - dir[d - 1] - 1; i++)
+		age_[i] = buf[i + dir[d - 1] + 1];
+	age_[dir[d] - dir[d - 1]-1] = NULL;
 	stu_inf.age = atoi(age_);
+	d++;
+
+	for (int i = 0; i < dir[d] - dir[d - 1] - 1; i++)
+		grade_[i] = buf[i + dir[d - 1] + 1];
+	grade_[dir[d] - dir[d - 1]-1] = NULL;
+	stu_inf.grade = atoi(grade_);
+	d++;
+
+	for (int i = 0; i < dir[d] - dir[d - 1] - 1; i++)
+		stu_inf.phone[i] = buf[i + dir[d - 1] + 1];
+	stu_inf.phone[dir[d] - dir[d - 1]-1] = NULL;
+	d++;
+
+	for (int i = 0; i < last_null - dir[d - 1] - 2; i++)
+		stu_inf.adress[i] = buf[i + dir[d - 1] + 1];
+	stu_inf.adress[last_null - dir[d - 1]-2] = NULL;
+	d++;
 
 	fclose(fp);
 	return stu_inf;
@@ -191,15 +227,14 @@ int rearrangement() {
 
 	for (int i = 0; i < line; i++) {
 		stu_inf = read_student_information(i+1);
-		sprintf_s(buf[i], sizeof(buf[i]), "%d %s %d\n", i+1, stu_inf.name, stu_inf.age);
+		sprintf_s(buf[i], sizeof(buf[i]), "%d %s %d %d %s %s\n", i+1, stu_inf.name, stu_inf.age, stu_inf.grade, stu_inf.phone, stu_inf.adress);
 	}
 	resave(buf);
 }
 
-// 번호로 학생 정보 찾기
-int find_student() {
+int find_student_use_number() {
 	int num;
-	printf("------------------");
+
 	while (true) {
 		printf("\nstudent number: ");
 		scanf_s("%d", &num);
@@ -208,7 +243,32 @@ int find_student() {
 		printf("please enter again\n");
 	}
 	struct student_information stu_inf = read_student_information(num);
-	printf("%d %s %d\n", stu_inf.number, stu_inf.name, stu_inf.age);
+	printf("%d %s %d %d %s %s\n", stu_inf.number, stu_inf.name, stu_inf.age, stu_inf.grade, stu_inf.phone, stu_inf.adress);
+	return 0;
+}
+
+// 번호로 학생 정보 찾기
+int find_student() {
+	char how[16] = "";
+	printf("------------------\n");
+	while (true) {
+		printf("what use to find student\n");
+		printf("num, name, age, grade, phone, exit\n");
+		printf("select : ");
+		scanf_s("%s", how, 16);
+
+		if (!strcmp(how, "num") || !strcmp(how, "number")) {
+			find_student_use_number();
+			break;
+		}
+		else if (!strcmp(how, "exit"))
+			break;
+		else
+			printf("please enter again\n");
+	}
+
+	find_student_use_number();
+
 	printf("------------------\n\n");
 	return 0;
 }
@@ -229,9 +289,12 @@ int edit_student() {
 	char buf[buf_lenth][1024];
 	char what[64]="";
 	char name[64]="";
+	char phone[16] = "";
+	char adress[64] = "";
 	char _[1024]="";
-	int num=0;
+	int num = 0;
 	int age = 0;
+	int grade = 0;
 
 	fopen_s(&fp, "student.txt", "r");
 	for (int i = 0; i < getTotalLine(); i++)
@@ -243,12 +306,18 @@ int edit_student() {
 	printf("number: %d\n", stu_inf.number);
 	printf("name : %s\n", stu_inf.name);
 	printf("age : %d\n", stu_inf.age);
+	printf("grade: %d\n", stu_inf.grade);
+	printf("phone: %s\n", stu_inf.phone);
+	printf("adress: %s\n", stu_inf.adress);
 
 	while (true) {
 		printf("\nedit inf: ");
 		scanf_s("%s", &what, 64);
 
-		if (!(strcmp(what, "name"))) {
+		if (!(strcmp(what, "all"))) {
+			continue;
+		}
+		else if (!(strcmp(what, "name"))) {
 			printf("name: ");
 			scanf_s("%s", &name, 64);
 			strcpy_s(stu_inf.name, 64, name);
@@ -260,13 +329,31 @@ int edit_student() {
 			stu_inf.age = age;
 			break;
 		}
+		else if (!(strcmp(what, "grade"))) {
+			printf("grade: ");
+			scanf_s("%d", &grade);
+			stu_inf.grade = grade;
+			break;
+		}
+		else if (!(strcmp(what, "phone"))) {
+			printf("phone: ");
+			scanf_s("%s", &phone, 16);
+			strcpy_s(stu_inf.phone, 16, phone);
+			break;
+		}
+		else if (!(strcmp(what, "adress"))) {
+			printf("adress: ");
+			scanf_s("%s", &adress, 64);
+			strcpy_s(stu_inf.adress, 64, adress);
+			break;
+		}
 		else {
 			printf("please enter again");
 		}
 	}
-	sprintf_s(buf[stu_inf.number - 1], sizeof(buf[stu_inf.number]), "%d %s %d\n", stu_inf.number, stu_inf.name, stu_inf.age);
+	sprintf_s(buf[stu_inf.number - 1], sizeof(buf[stu_inf.number]), "%d %s %d %d %s %s\n", stu_inf.number, stu_inf.name, stu_inf.age, stu_inf.grade, stu_inf.phone, stu_inf.adress);
 	resave(buf, stu_inf);
-	printf("saved");
+	printf("saved\n");
 	printf("------------------\n\n");
 	return 0;
 }
@@ -298,6 +385,9 @@ int remove_student() {
 		printf("number: %d\n", stu_inf.number);
 		printf("name: %s\n", stu_inf.name);
 		printf("age: %d\n", stu_inf.age);
+		printf("grade: %d\n", stu_inf.grade);
+		printf("phone: %s\n", stu_inf.phone);
+		printf("adress: %s\n", stu_inf.adress);
 		printf("remove this student (y or n):");
 		scanf_s("%s", &answer, 64);
 
