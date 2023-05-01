@@ -7,7 +7,7 @@
 // 저장 가능 정보 개수
 #define inf_num 7
 
-// 학생 정보 구조체s
+// 학생 정보 구조체
 struct student_information
 {
 	int number;
