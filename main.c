@@ -19,7 +19,7 @@ struct student_information
 	char memo[1024];
 };
 
-// 학생수
+// 학생수 n명
 int getTotalLine() {
 	FILE* fp = NULL;
 	errno_t err;
@@ -35,7 +35,9 @@ int getTotalLine() {
 
 // 리스트 마지막에 학생 추가
 void save_student(struct student_information stu_inf) {
+	FILE* fp;
 	char student_inf[1024] = "";
+
 	sprintf_s(student_inf, sizeof(student_inf), "%d,%s,%d,%d,%s,%s, \n", getTotalLine() + 1, stu_inf.name, stu_inf.age, stu_inf.grade, stu_inf.phone, stu_inf.adress);
 	printf("saved\n");
 	printf("number : %d\n", getTotalLine() + 1);
@@ -45,19 +47,8 @@ void save_student(struct student_information stu_inf) {
 	printf("phone : %s\n", stu_inf.phone);
 	printf("adress : %s\n", stu_inf.adress);
 
-	FILE* fp;
 	fopen_s(&fp, "student.txt", "a");
 	fputs(student_inf, fp);
-	fclose(fp);
-}
-
-// 삭제된 학생 자리 제거
-int resave(char buf[buf_lenth][1024]) {
-	FILE* fp;
-	int line = getTotalLine();
-	fopen_s(&fp, "student.txt", "w");
-	for (int i = 0; i < line; i++)
-		fputs(buf[i], fp);
 	fclose(fp);
 }
 
@@ -78,11 +69,12 @@ int add_student() {
 		scanf_s(" %[^\n]", &stu_inf.phone, 64);
 		printf("student adress: ");
 		scanf_s(" %[^\n]", &stu_inf.adress, 64);
-		printf("is this collect? (y or n or exit): ");
 
 		fflush(stdin);
+		printf("is this collect? (y or n or exit): ");
 		scanf_s(" %s", &col, 16);
 		printf("------------------\n\n");
+
 		if (!(strcmp(col, "y")) || !(strcmp(col, "yes"))) {
 			save_student(stu_inf);
 			return 1;
@@ -95,14 +87,15 @@ int add_student() {
 // 학생 찾기
 int search_student() {
 	FILE* fp;
+	fopen_s(&fp, "student.txt", "r");
+
 	char buf[1024];
 	char ex_buf[1024] = "";
 	char next_page[16] = "";
 	char _[16];
-	int num = 10; // 한번에 볼 수 있는 학생 수
+	int num = 10; // 페이지당 볼 수 있는 학생 수
 	int last_page = getTotalLine() / num;
 	int now_page = 0;
-	fopen_s(&fp, "student.txt", "r");
 
 	if (getTotalLine() % num != 0)
 		last_page = (getTotalLine() / num) + 1;
@@ -110,6 +103,7 @@ int search_student() {
 	while (true) {
 		printf("------------------\n");
 
+		// 1페이지 출력
 		for (int i = 0; i < num; i++) {
 			fgets(buf, sizeof(buf), fp);
 			if (!strcmp(buf, ex_buf)) {
@@ -121,19 +115,27 @@ int search_student() {
 		}
 		now_page++;
 
-		if (last_page != now_page) {
-			printf("\nnext page %d/%d (y or n):", now_page, last_page);
-			scanf_s("%s", &next_page, 16);
-		}
-		else {
-			printf("\nthis page is last page\n");
-			printf("press any key");
-			scanf_s("%s", &_, 16);
-			strcpy_s(next_page, sizeof(next_page), "n");
-		}
-		if (!strcmp(next_page, "n") || !strcmp(next_page, "no")) {
-			printf("------------------\n\n");
-			break;
+		// 계속 볼것인지
+		while (true) {
+			if (last_page != now_page) {
+				printf("\nnext page %d/%d (y or n):", now_page, last_page);
+				scanf_s("%s", &next_page, 16);
+			}
+			else {
+				printf("\nthis page is last page\n");
+				printf("press any key");
+				scanf_s("%s", &_, 16);
+				strcpy_s(next_page, sizeof(next_page), "n");
+			}
+			if (!strcmp(next_page, "y") || !strcmp(next_page, "yes")) {
+				break;
+			}
+			else if (!strcmp(next_page, "n") || !strcmp(next_page, "no")) {
+				printf("------------------\n\n");
+				fclose(fp);
+				return 0;
+			}
+			else printf("please enter again\n");
 		}
 	}
 
@@ -143,15 +145,16 @@ int search_student() {
 
 // num번째 학생 정보를 구조체로 반환
 struct student_information read_student_information(int num) {
-	struct student_information stu_inf;
 	FILE* fp;
+	struct student_information stu_inf;
 	char buf[1024];
-	fopen_s(&fp, "student.txt", "r");
 
+	fopen_s(&fp, "student.txt", "r");
 	for (int i = 0; i < num; i++)
 		fgets(buf, sizeof(buf), fp);
 
-	// 몇번째를 기준으로 나누는지
+	// 정보를 나누는 번호
+	// ,단위로 나뉜는 위치
 	int i = 0;
 	int j = 0;
 	int dir[inf_num - 1];
@@ -219,6 +222,16 @@ struct student_information read_student_information(int num) {
 	return stu_inf;
 }
 
+// 재저장
+int resave(char buf[buf_lenth][1024]) {
+	FILE* fp;
+	int line = getTotalLine();
+	fopen_s(&fp, "student.txt", "w");
+	for (int i = 0; i < line; i++)
+		fputs(buf[i], fp);
+	fclose(fp);
+}
+
 // 학생 삭제시 번호 재배열
 int rearrangement() {
 	struct student_information stu_inf;
@@ -234,6 +247,7 @@ int rearrangement() {
 
 // 번호로 학생 정보 찾기
 int find_student_use_number() {
+	struct student_information stu_inf;
 	int num;
 
 	while (true) {
@@ -243,15 +257,17 @@ int find_student_use_number() {
 			break;
 		printf("please enter again\n");
 	}
-	struct student_information stu_inf = read_student_information(num);
+	stu_inf = read_student_information(num);
 	printf("%d, %s, %d, %d, %s, %s\n\n", stu_inf.number, stu_inf.name, stu_inf.age, stu_inf.grade, stu_inf.phone, stu_inf.adress);
 	return 0;
 }
 
+// 이름으로 학생 정보 찾기
 int find_studnet_use_name() {
+	struct student_information stu_inf;
 	char name[64]="";
 	char col[16]="";
-	struct student_information stu_inf;
+
 	while (true) {
 		printf("\nstudent name: ");
 		scanf_s(" %[^\n]", &name, 64);
@@ -274,10 +290,12 @@ int find_studnet_use_name() {
 	}
 }
 
+// 나이로 학생 정보 찾기
 int find_studnet_use_age() {
+	struct student_information stu_inf;
 	char age[64] = "";
 	char col[16] = "";
-	struct student_information stu_inf;
+
 	while (true) {
 		printf("\nstudent age: ");
 		scanf_s(" %[^\n]", &age, 64);
@@ -300,10 +318,12 @@ int find_studnet_use_age() {
 	}
 }
 
+// 학번으로 학생 정보 찾기
 int find_studnet_use_grade() {
+	struct student_information stu_inf;
 	char grade[64] = "";
 	char col[16] = "";
-	struct student_information stu_inf;
+
 	while (true) {
 		printf("\nstudent grade: ");
 		scanf_s(" %[^\n]", &grade, 64);
@@ -326,10 +346,12 @@ int find_studnet_use_grade() {
 	}
 }
 
+// 폰번호로 학생 정보 찾기
 int find_studnet_use_phone() {
+	struct student_information stu_inf;
 	char phone[64] = "";
 	char col[16] = "";
-	struct student_information stu_inf;
+	
 	while (true) {
 		printf("\nstudent phone: ");
 		scanf_s(" %[^\n]", &phone, 64);
@@ -384,17 +406,8 @@ int find_student() {
 
 // 학생 정보 수정
 int edit_student() {
-	int number;
-	printf("------------------");
-	while (true) {
-		printf("\nstudent number: ");
-		scanf_s("%d", &number);
-		if (0 < number && number < getTotalLine() + 1)
-			break;
-		printf("please enter again\n");
-	}
-	struct student_information stu_inf = read_student_information(number);
 	FILE* fp;
+	struct student_information stu_inf;
 	char buf[buf_lenth][1024];
 	char what[64] = "";
 	char name[64] = "";
@@ -405,14 +418,19 @@ int edit_student() {
 	int num = 0;
 	int age = 0;
 	int grade = 0;
+	int number;
 
-	fopen_s(&fp, "student.txt", "r");
-	for (int i = 0; i < getTotalLine(); i++)
-		fgets(buf[i], sizeof(buf[i]), fp);
-	fclose(fp);
+	printf("------------------");
+	while (true) {
+		printf("\nstudent number: ");
+		scanf_s("%d", &number);
+		if (0 < number && number < getTotalLine() + 1)
+			break;
+		printf("please enter again\n");
+	}
+	stu_inf = read_student_information(number);
 
 	printf("\nstudent information\n");
-
 	printf("number: %d\n", stu_inf.number);
 	printf("name : %s\n", stu_inf.name);
 	printf("age : %d\n", stu_inf.age);
@@ -421,6 +439,7 @@ int edit_student() {
 	printf("adress: %s\n", stu_inf.adress);
 	printf("memo: %s\n", stu_inf.memo);
 
+	// 무엇을 수정할 것인지
 	while (true) {
 		printf("\nedit inf (exit): ");
 		scanf_s("%s", &what, 64);
@@ -461,8 +480,14 @@ int edit_student() {
 		else
 			printf("please enter again");
 	}
+
+	fopen_s(&fp, "student.txt", "r");
+	for (int i = 0; i < getTotalLine(); i++)
+		fgets(buf[i], sizeof(buf[i]), fp);
+	fclose(fp);
+
 	sprintf_s(buf[stu_inf.number - 1], sizeof(buf[stu_inf.number]), "%d,%s,%d,%d,%s,%s,%s\n", stu_inf.number, stu_inf.name, stu_inf.age, stu_inf.grade, stu_inf.phone, stu_inf.adress, stu_inf.memo);
-	resave(buf, stu_inf);
+	resave(buf);
 	printf("saved\n");
 	printf("------------------\n\n");
 	return 0;
@@ -471,7 +496,9 @@ int edit_student() {
 // 학생 제거
 int remove_student() {
 	FILE* fp;
+	struct student_information stu_inf;
 	char buf[buf_lenth][1024];
+	char answer[64];
 	int num = 1;
 
 	fopen_s(&fp, "student.txt", "r");
@@ -487,9 +514,8 @@ int remove_student() {
 			break;
 		printf("please enter again\n");
 	}
+	stu_inf = read_student_information(num);
 
-	struct student_information stu_inf = read_student_information(num);
-	char answer[64];
 	while (true) {
 		printf("\nremove student information\n");
 		printf("number: %d\n", stu_inf.number);
