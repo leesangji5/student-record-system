@@ -249,22 +249,129 @@ int find_student_use_number() {
 }
 
 int find_studnet_use_name() {
-	char name;
+	char name[64]="";
+	char col[16]="";
+	struct student_information stu_inf;
+	while (true) {
+		printf("\nstudent name: ");
+		scanf_s(" %[^\n]", &name, 64);
+		printf("is this collect (y or n): ");
+		scanf_s("%s", &col, 16);
+		if (!strcmp(col, "y") || !strcmp(col, "yes"))
+			break;
+	}
+	for (int i = 1; i < getTotalLine()+1; i++) {
+		stu_inf = read_student_information(i);
+		if (!strcmp(stu_inf.name, name)) {
+			printf("\nnumber: %d\n", stu_inf.number);
+			printf("name : %s\n", stu_inf.name);
+			printf("age : %d\n", stu_inf.age);
+			printf("grade: %d\n", stu_inf.grade);
+			printf("phone: %s\n", stu_inf.phone);
+			printf("adress: %s\n", stu_inf.adress);
+			printf("memo: %s\n", stu_inf.memo);
+		}
+	}
+}
+
+int find_studnet_use_age() {
+	char age[64] = "";
+	char col[16] = "";
+	struct student_information stu_inf;
+	while (true) {
+		printf("\nstudent age: ");
+		scanf_s(" %[^\n]", &age, 64);
+		printf("is this collect (y or n): ");
+		scanf_s("%s", &col, 16);
+		if (!strcmp(col, "y") || !strcmp(col, "yes"))
+			break;
+	}
+	for (int i = 1; i < getTotalLine() + 1; i++) {
+		stu_inf = read_student_information(i);
+		if (stu_inf.age == atoi(age)) {
+			printf("\nnumber: %d\n", stu_inf.number);
+			printf("name : %s\n", stu_inf.name);
+			printf("age : %d\n", stu_inf.age);
+			printf("grade: %d\n", stu_inf.grade);
+			printf("phone: %s\n", stu_inf.phone);
+			printf("adress: %s\n", stu_inf.adress);
+			printf("memo: %s\n", stu_inf.memo);
+		}
+	}
+}
+
+int find_studnet_use_grade() {
+	char grade[64] = "";
+	char col[16] = "";
+	struct student_information stu_inf;
+	while (true) {
+		printf("\nstudent grade: ");
+		scanf_s(" %[^\n]", &grade, 64);
+		printf("is this collect (y or n): ");
+		scanf_s("%s", &col, 16);
+		if (!strcmp(col, "y") || !strcmp(col, "yes"))
+			break;
+	}
+	for (int i = 1; i < getTotalLine() + 1; i++) {
+		stu_inf = read_student_information(i);
+		if (stu_inf.grade == atoi(grade)) {
+			printf("\nnumber: %d\n", stu_inf.number);
+			printf("name : %s\n", stu_inf.name);
+			printf("age : %d\n", stu_inf.age);
+			printf("grade: %d\n", stu_inf.grade);
+			printf("phone: %s\n", stu_inf.phone);
+			printf("adress: %s\n", stu_inf.adress);
+			printf("memo: %s\n", stu_inf.memo);
+		}
+	}
+}
+
+int find_studnet_use_phone() {
+	char phone[64] = "";
+	char col[16] = "";
+	struct student_information stu_inf;
+	while (true) {
+		printf("\nstudent phone: ");
+		scanf_s(" %[^\n]", &phone, 64);
+		printf("is this collect (y or n): ");
+		scanf_s("%s", &col, 16);
+		if (!strcmp(col, "y") || !strcmp(col, "yes"))
+			break;
+	}
+	for (int i = 1; i < getTotalLine() + 1; i++) {
+		stu_inf = read_student_information(i);
+		if (!strcmp(stu_inf.phone, phone)) {
+			printf("\nnumber: %d\n", stu_inf.number);
+			printf("name : %s\n", stu_inf.name);
+			printf("age : %d\n", stu_inf.age);
+			printf("grade: %d\n", stu_inf.grade);
+			printf("phone: %s\n", stu_inf.phone);
+			printf("adress: %s\n", stu_inf.adress);
+			printf("memo: %s\n", stu_inf.memo);
+		}
+	}
 }
 
 // 학생 검색
 int find_student() {
 	char how[16] = "";
-	printf("------------------\n");
+	printf("------------------");
 	while (true) {
-		printf("what use to find student\n");
+		printf("\nwhat use to find student\n");
 		printf("num, name, age, grade, phone, exit\n");
-		printf("select : ");
+		printf("select: ");
 		scanf_s("%s", how, 16);
 
-		if (!strcmp(how, "num") || !strcmp(how, "number")) {
+		if (!strcmp(how, "num") || !strcmp(how, "number"))
 			find_student_use_number();
-		}
+		else if (!strcmp(how, "name"))
+			find_studnet_use_name();
+		else if (!strcmp(how, "age"))
+			find_studnet_use_age();
+		else if (!strcmp(how, "grade"))
+			find_studnet_use_grade();
+		else if (!strcmp(how, "phone"))
+			find_studnet_use_phone();
 		else if (!strcmp(how, "exit"))
 			break;
 		else
