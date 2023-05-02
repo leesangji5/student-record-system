@@ -567,7 +567,7 @@ int main() {
 		else if (select == 6)
 			break;
 		else
-			printf("please enter again");
+			printf("please enter again\n");
 	}
 	return 0;
 }
