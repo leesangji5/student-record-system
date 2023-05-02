@@ -140,7 +140,7 @@ int search_student() {
 	}
 
 	fclose(fp);
-	return 0;
+	return 1;
 }
 
 // num번째 학생 정보를 구조체로 반환
@@ -223,7 +223,7 @@ struct student_information read_student_information(int num) {
 }
 
 // 재저장
-int resave(char buf[buf_lenth][1024]) {
+void resave(char buf[buf_lenth][1024]) {
 	FILE* fp;
 	int line = getTotalLine();
 	fopen_s(&fp, "student.txt", "w");
@@ -233,7 +233,7 @@ int resave(char buf[buf_lenth][1024]) {
 }
 
 // 학생 삭제시 번호 재배열
-int rearrangement() {
+void rearrangement() {
 	struct student_information stu_inf;
 	int line = getTotalLine();
 	char buf[buf_lenth][1024];
@@ -245,8 +245,19 @@ int rearrangement() {
 	resave(buf);
 }
 
+int print_student(struct student_information stu_inf){
+	printf("\nnumber: %d\n", stu_inf.number);
+	printf("name : %s\n", stu_inf.name);
+	printf("age : %d\n", stu_inf.age);
+	printf("grade: %d\n", stu_inf.grade);
+	printf("phone: %s\n", stu_inf.phone);
+	printf("adress: %s\n", stu_inf.adress);
+	printf("memo: %s\n", stu_inf.memo);
+	return 0;
+}
+
 // 번호로 학생 정보 찾기
-int find_student_use_number() {
+void find_student_use_number() {
 	struct student_information stu_inf;
 	int num;
 
@@ -258,18 +269,11 @@ int find_student_use_number() {
 		printf("please enter again\n");
 	}
 	stu_inf = read_student_information(num);
-	printf("\nnumber: %d\n", stu_inf.number);
-	printf("name : %s\n", stu_inf.name);
-	printf("age : %d\n", stu_inf.age);
-	printf("grade: %d\n", stu_inf.grade);
-	printf("phone: %s\n", stu_inf.phone);
-	printf("adress: %s\n", stu_inf.adress);
-	printf("memo: %s\n", stu_inf.memo);
-	return 0;
+	print_student(stu_inf);
 }
 
 // 이름으로 학생 정보 찾기
-int find_studnet_use_name() {
+void find_studnet_use_name() {
 	struct student_information stu_inf;
 	char name[64]="";
 	char col[16]="";
@@ -285,19 +289,13 @@ int find_studnet_use_name() {
 	for (int i = 1; i < getTotalLine()+1; i++) {
 		stu_inf = read_student_information(i);
 		if (!strcmp(stu_inf.name, name)) {
-			printf("\nnumber: %d\n", stu_inf.number);
-			printf("name : %s\n", stu_inf.name);
-			printf("age : %d\n", stu_inf.age);
-			printf("grade: %d\n", stu_inf.grade);
-			printf("phone: %s\n", stu_inf.phone);
-			printf("adress: %s\n", stu_inf.adress);
-			printf("memo: %s\n", stu_inf.memo);
+			print_student(stu_inf);
 		}
 	}
 }
 
 // 나이로 학생 정보 찾기
-int find_studnet_use_age() {
+void find_studnet_use_age() {
 	struct student_information stu_inf;
 	char age[64] = "";
 	char col[16] = "";
@@ -313,19 +311,13 @@ int find_studnet_use_age() {
 	for (int i = 1; i < getTotalLine() + 1; i++) {
 		stu_inf = read_student_information(i);
 		if (stu_inf.age == atoi(age)) {
-			printf("\nnumber: %d\n", stu_inf.number);
-			printf("name : %s\n", stu_inf.name);
-			printf("age : %d\n", stu_inf.age);
-			printf("grade: %d\n", stu_inf.grade);
-			printf("phone: %s\n", stu_inf.phone);
-			printf("adress: %s\n", stu_inf.adress);
-			printf("memo: %s\n", stu_inf.memo);
+			print_student(stu_inf);
 		}
 	}
 }
 
 // 학번으로 학생 정보 찾기
-int find_studnet_use_grade() {
+void find_studnet_use_grade() {
 	struct student_information stu_inf;
 	char grade[64] = "";
 	char col[16] = "";
@@ -341,19 +333,13 @@ int find_studnet_use_grade() {
 	for (int i = 1; i < getTotalLine() + 1; i++) {
 		stu_inf = read_student_information(i);
 		if (stu_inf.grade == atoi(grade)) {
-			printf("\nnumber: %d\n", stu_inf.number);
-			printf("name : %s\n", stu_inf.name);
-			printf("age : %d\n", stu_inf.age);
-			printf("grade: %d\n", stu_inf.grade);
-			printf("phone: %s\n", stu_inf.phone);
-			printf("adress: %s\n", stu_inf.adress);
-			printf("memo: %s\n", stu_inf.memo);
+			print_student(stu_inf);
 		}
 	}
 }
 
 // 폰번호로 학생 정보 찾기
-int find_studnet_use_phone() {
+void find_studnet_use_phone() {
 	struct student_information stu_inf;
 	char phone[64] = "";
 	char col[16] = "";
@@ -369,19 +355,13 @@ int find_studnet_use_phone() {
 	for (int i = 1; i < getTotalLine() + 1; i++) {
 		stu_inf = read_student_information(i);
 		if (!strcmp(stu_inf.phone, phone)) {
-			printf("\nnumber: %d\n", stu_inf.number);
-			printf("name : %s\n", stu_inf.name);
-			printf("age : %d\n", stu_inf.age);
-			printf("grade: %d\n", stu_inf.grade);
-			printf("phone: %s\n", stu_inf.phone);
-			printf("adress: %s\n", stu_inf.adress);
-			printf("memo: %s\n", stu_inf.memo);
+			print_student(stu_inf);
 		}
 	}
 }
 
 // 학생 검색
-int find_student() {
+void find_student() {
 	char how[16] = "";
 	printf("------------------");
 	while (true) {
@@ -407,11 +387,10 @@ int find_student() {
 	}
 
 	printf("------------------\n\n");
-	return 0;
 }
 
 // 학생 정보 수정
-int edit_student() {
+void edit_student() {
 	FILE* fp;
 	struct student_information stu_inf;
 	char buf[buf_lenth][1024];
@@ -436,14 +415,8 @@ int edit_student() {
 	}
 	stu_inf = read_student_information(number);
 
-	printf("\nstudent information\n");
-	printf("number: %d\n", stu_inf.number);
-	printf("name : %s\n", stu_inf.name);
-	printf("age : %d\n", stu_inf.age);
-	printf("grade: %d\n", stu_inf.grade);
-	printf("phone: %s\n", stu_inf.phone);
-	printf("adress: %s\n", stu_inf.adress);
-	printf("memo: %s\n", stu_inf.memo);
+	printf("\nstudent information");
+	print_student(stu_inf);
 
 	// 무엇을 수정할 것인지
 	while (true) {
@@ -496,7 +469,6 @@ int edit_student() {
 	resave(buf);
 	printf("saved\n");
 	printf("------------------\n\n");
-	return 0;
 }
 
 // 학생 제거
@@ -523,14 +495,8 @@ int remove_student() {
 	stu_inf = read_student_information(num);
 
 	while (true) {
-		printf("\nremove student information\n");
-		printf("number: %d\n", stu_inf.number);
-		printf("name: %s\n", stu_inf.name);
-		printf("age: %d\n", stu_inf.age);
-		printf("grade: %d\n", stu_inf.grade);
-		printf("phone: %s\n", stu_inf.phone);
-		printf("adress: %s\n", stu_inf.adress);
-		printf("memo: %s\n\n", stu_inf.memo);
+		printf("\nremove student information");
+		print_student(stu_inf);
 		printf("remove this student (y or n):");
 		scanf_s("%s", &answer, 64);
 
@@ -554,12 +520,11 @@ int remove_student() {
 }
 
 // 파일 있는지 확인 후 없으면 생성
-int file_check() {
+void file_check() {
 	FILE* fp;
 
 	fopen_s(&fp, "student.txt", "a");
 	fclose(fp);
-	return 0;
 }
 
 int main() {
