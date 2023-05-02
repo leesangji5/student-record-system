@@ -39,13 +39,14 @@ void save_student(struct student_information stu_inf) {
 	char student_inf[1024] = "";
 
 	sprintf_s(student_inf, sizeof(student_inf), "%d,%s,%d,%d,%s,%s, \n", getTotalLine() + 1, stu_inf.name, stu_inf.age, stu_inf.grade, stu_inf.phone, stu_inf.adress);
-	printf("saved\n");
+	printf("\nsaved\n");
 	printf("number : %d\n", getTotalLine() + 1);
 	printf("name : %s\n", stu_inf.name);
 	printf("age : %d\n", stu_inf.age);
 	printf("grade : %d\n", stu_inf.grade);
 	printf("phone : %s\n", stu_inf.phone);
 	printf("adress : %s\n", stu_inf.adress);
+	printf("------------------\n\n");
 
 	fopen_s(&fp, "student.txt", "a");
 	fputs(student_inf, fp);
@@ -73,7 +74,6 @@ int add_student() {
 		fflush(stdin);
 		printf("is this collect? (y or n or exit): ");
 		scanf_s(" %s", &col, 16);
-		printf("------------------\n\n");
 
 		if (!(strcmp(col, "y")) || !(strcmp(col, "yes"))) {
 			save_student(stu_inf);
@@ -251,14 +251,20 @@ int find_student_use_number() {
 	int num;
 
 	while (true) {
-		printf("\nstudent number: ");
+		printf("student number: ");
 		scanf_s("%d", &num);
 		if (0 < num && num < getTotalLine() + 1)
 			break;
 		printf("please enter again\n");
 	}
 	stu_inf = read_student_information(num);
-	printf("%d, %s, %d, %d, %s, %s\n\n", stu_inf.number, stu_inf.name, stu_inf.age, stu_inf.grade, stu_inf.phone, stu_inf.adress);
+	printf("\nnumber: %d\n", stu_inf.number);
+	printf("name : %s\n", stu_inf.name);
+	printf("age : %d\n", stu_inf.age);
+	printf("grade: %d\n", stu_inf.grade);
+	printf("phone: %s\n", stu_inf.phone);
+	printf("adress: %s\n", stu_inf.adress);
+	printf("memo: %s\n", stu_inf.memo);
 	return 0;
 }
 
@@ -524,7 +530,7 @@ int remove_student() {
 		printf("grade: %d\n", stu_inf.grade);
 		printf("phone: %s\n", stu_inf.phone);
 		printf("adress: %s\n", stu_inf.adress);
-		printf("memo: %s\n", stu_inf.memo);
+		printf("memo: %s\n\n", stu_inf.memo);
 		printf("remove this student (y or n):");
 		scanf_s("%s", &answer, 64);
 
@@ -572,6 +578,8 @@ int main() {
 		printf("4. find student\n");
 		printf("5. edit student(memo)\n");
 		printf("6. Exit\n");
+		
+		num_of_student = getTotalLine();
 		if (num_of_student == 0)
 			printf("you should add student\n");
 		fflush(stdin);
