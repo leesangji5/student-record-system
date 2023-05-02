@@ -2,6 +2,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+// 메모의 단어를 이용하여 학생 검색
+
 // 기록 가능한 학생 수
 #define buf_lenth 100
 // 저장 가능 정보 개수
