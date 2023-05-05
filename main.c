@@ -247,7 +247,7 @@ void rearrangement() {
 	resave(buf);
 }
 
-int print_student(struct student_information stu_inf){
+int print_student(struct student_information stu_inf) {
 	printf("\nnumber: %d\n", stu_inf.number);
 	printf("name : %s\n", stu_inf.name);
 	printf("age : %d\n", stu_inf.age);
@@ -258,7 +258,7 @@ int print_student(struct student_information stu_inf){
 	return 0;
 }
 
-// 번호로 학생 정보 찾기
+// 번호로 학생 정보 검색
 void find_student_use_number() {
 	struct student_information stu_inf;
 	int num;
@@ -274,11 +274,11 @@ void find_student_use_number() {
 	print_student(stu_inf);
 }
 
-// 이름으로 학생 정보 찾기
-void find_studnet_use_name() {
+// 이름으로 학생 정보 검색
+void find_student_use_name() {
 	struct student_information stu_inf;
-	char name[64]="";
-	char col[16]="";
+	char name[64] = "";
+	char col[16] = "";
 
 	while (true) {
 		printf("\nstudent name: ");
@@ -288,7 +288,7 @@ void find_studnet_use_name() {
 		if (!strcmp(col, "y") || !strcmp(col, "yes"))
 			break;
 	}
-	for (int i = 1; i < getTotalLine()+1; i++) {
+	for (int i = 1; i < getTotalLine() + 1; i++) {
 		stu_inf = read_student_information(i);
 		if (!strcmp(stu_inf.name, name)) {
 			print_student(stu_inf);
@@ -296,8 +296,8 @@ void find_studnet_use_name() {
 	}
 }
 
-// 나이로 학생 정보 찾기
-void find_studnet_use_age() {
+// 나이로 학생 정보 검색
+void find_student_use_age() {
 	struct student_information stu_inf;
 	char age[64] = "";
 	char col[16] = "";
@@ -318,8 +318,8 @@ void find_studnet_use_age() {
 	}
 }
 
-// 학번으로 학생 정보 찾기
-void find_studnet_use_grade() {
+// 학번으로 학생 정보 검색
+void find_student_use_grade() {
 	struct student_information stu_inf;
 	char grade[64] = "";
 	char col[16] = "";
@@ -340,12 +340,12 @@ void find_studnet_use_grade() {
 	}
 }
 
-// 폰번호로 학생 정보 찾기
-void find_studnet_use_phone() {
+// 폰번호로 학생 정보 검색
+void find_student_use_phone() {
 	struct student_information stu_inf;
 	char phone[64] = "";
 	char col[16] = "";
-	
+
 	while (true) {
 		printf("\nstudent phone: ");
 		scanf_s(" %[^\n]", &phone, 64);
@@ -362,26 +362,71 @@ void find_studnet_use_phone() {
 	}
 }
 
+// 메모의 특정 단어로 학생 검색
+void find_student_use_memo() {
+	struct student_information stu_inf;
+	char str[64] = "";
+	char col[16] = "";
+	char txtStr[64] = "";
+
+	while (true) {
+		printf("\nEnter a specific word in the memo: ");
+		scanf_s(" %[^\n]", &str, 64);
+		printf("is this collect (y or n): ");
+		scanf_s("%s", &col, 16);
+		if (!strcmp(col, "y") || !strcmp(col, "yes"))
+			break;
+	}
+	for (int i = 1; i < getTotalLine() + 1; i++) {
+		stu_inf = read_student_information(i);
+		int i = 0;
+		int j = 0;
+		strcpy_s(txtStr, 64, "");
+		while (stu_inf.memo[i]) {
+			if ((int)stu_inf.memo[i] == (int)*" ") {
+				txtStr[j] = '\0';
+				if (!strcmp(txtStr, str)) {
+					strcpy_s(txtStr, 64, "");
+					print_student(stu_inf);
+					break;
+				}
+				strcpy_s(txtStr, 64, "");
+				i++; j = 0;
+			}
+			else {
+				txtStr[j] = stu_inf.memo[i];
+				i++; j++;
+			}
+		}
+		txtStr[j] = '\0';
+		if (!strcmp(txtStr, str)) {
+			print_student(stu_inf);
+		}
+	}
+}
+
 // 학생 검색
 void find_student() {
 	char how[16] = "";
 	printf("------------------");
 	while (true) {
 		printf("\nwhat use to find student\n");
-		printf("num, name, age, grade, phone, exit\n");
+		printf("num, name, age, grade, phone, memo, exit\n");
 		printf("select: ");
 		scanf_s("%s", how, 16);
 
 		if (!strcmp(how, "num") || !strcmp(how, "number"))
 			find_student_use_number();
 		else if (!strcmp(how, "name"))
-			find_studnet_use_name();
+			find_student_use_name();
 		else if (!strcmp(how, "age"))
-			find_studnet_use_age();
+			find_student_use_age();
 		else if (!strcmp(how, "grade"))
-			find_studnet_use_grade();
+			find_student_use_grade();
 		else if (!strcmp(how, "phone"))
-			find_studnet_use_phone();
+			find_student_use_phone();
+		else if (!strcmp(how, "memo"))
+			find_student_use_memo();
 		else if (!strcmp(how, "exit"))
 			break;
 		else
@@ -545,7 +590,7 @@ int main() {
 		printf("4. find student\n");
 		printf("5. edit student(memo)\n");
 		printf("6. Exit\n");
-		
+
 		num_of_student = getTotalLine();
 		if (num_of_student == 0)
 			printf("you should add student\n");
