@@ -576,6 +576,7 @@ void file_check() {
 	fclose(fp);
 }
 
+// 아이디 갯수
 int getTotalLineId() {
 	FILE* fp = NULL;
 	errno_t err;
@@ -589,16 +590,7 @@ int getTotalLineId() {
 	return line;
 }
 
-void id_file_check() {
-	FILE* fp;
-
-	fopen_s(&fp, "id.txt", "a");
-	fclose(fp);
-
-	fopen_s(&fp, "password.txt", "a");
-	fclose(fp);
-}
-
+// 마스터 아이디 추가
 void add_master_id() {
 	FILE* fp;
 	if (!getTotalLineId()) {
@@ -612,6 +604,19 @@ void add_master_id() {
 	}
 }
 
+// 아이디, 비번 파일 확인
+void id_file_check() {
+	FILE* fp;
+
+	fopen_s(&fp, "id.txt", "a");
+	fclose(fp);
+
+	fopen_s(&fp, "password.txt", "a");
+	fclose(fp);
+	add_master_id();
+}
+
+// 로그인
 int login() {
 	FILE* fp;
 	char id[17] = "";
@@ -628,12 +633,14 @@ int login() {
 	fflush(stdin);
 	scanf_s("%s", &password, 17);
 
+	// 마스터 아이디 로그인
 	if (!strcmp("master", id) && !strcmp("master1234!", password)) {
 		printf("master id logged in\n");
 		printf("------------------\n\n");
 		return 3;
 	}
 
+	// 일반 아이디 로그인
 	for (int i = 0; i < getTotalLineId(); i++) {
 		fopen_s(&fp, "id.txt", "r");
 		for (int j = 0; j < i + 2; j++)
@@ -668,6 +675,7 @@ int login() {
 	return 0;
 }
 
+// 아이디 생성
 void create_id() {
 	FILE* fp=NULL;
 	char id[17] = "";
@@ -689,6 +697,7 @@ void create_id() {
 		fflush(stdin);
 		scanf_s("%s", &col, 16);
 
+		// 아이디 중복 확인
 		fopen_s(&fp, "id.txt", "r");
 		for (int i = 0; i < getTotalLineId(); i++) {
 			fgets(dupId, sizeof(dupId), fp);
@@ -731,7 +740,6 @@ void create_id() {
 int main() {
 	file_check();
 	id_file_check();
-	add_master_id();
 	rearrangement();
 
 	int num_of_student = getTotalLine();
