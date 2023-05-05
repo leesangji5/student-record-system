@@ -679,10 +679,10 @@ void create_id() {
 	printf("------------------");
 
 	while (true) {
-		printf("\nenter your id: ");
+		printf("\nenter your id (max lenth 16): ");
 		fflush(stdin);
 		scanf_s("%s", &id, 17);
-		printf("enter your password: ");
+		printf("enter your password (max lenth 16): ");
 		fflush(stdin);
 		scanf_s("%s", &password, 17);
 		printf("this is collect (y or n or exit): ");
@@ -764,7 +764,7 @@ int main() {
 			add_student();
 		else if (!logged && select != 6 && select < 9)
 			printf("you should login\n\n");
-		else if (logged == 3 && select != 7 && select != 6 && select != 8)
+		else if (logged == 3 && select != 7 && select != 6 && select != 9)
 			printf("master id can only create id\n\n");
 		else if (num_of_student == 0 && select == 1)
 			printf("please enter again\nyou should add student\n\n");
