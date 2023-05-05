@@ -2,7 +2,8 @@
 #include <stdbool.h>
 #include <string.h>
 
-// 메모의 단어를 이용하여 학생 검색
+// 추가 예정
+// 암호화
 
 // 기록 가능한 학생 수
 #define buf_lenth 100
@@ -247,6 +248,7 @@ void rearrangement() {
 	resave(buf);
 }
 
+// 학생 구조체를 받아 출력
 int print_student(struct student_information stu_inf) {
 	printf("\nnumber: %d\n", stu_inf.number);
 	printf("name : %s\n", stu_inf.name);
@@ -574,11 +576,167 @@ void file_check() {
 	fclose(fp);
 }
 
+int getTotalLineId() {
+	FILE* fp = NULL;
+	errno_t err;
+	int line = 0;
+	char c;
+
+	fopen_s(&fp, "id.txt", "r");
+	while ((c = fgetc(fp)) != EOF)
+		if (c == '\n') line++;
+	fclose(fp);
+	return line;
+}
+
+void id_file_check() {
+	FILE* fp;
+
+	fopen_s(&fp, "id.txt", "a");
+	fclose(fp);
+
+	fopen_s(&fp, "password.txt", "a");
+	fclose(fp);
+}
+
+void add_master_id() {
+	FILE* fp;
+	if (!getTotalLineId()) {
+		fopen_s(&fp, "id.txt", "a");
+		fputs("master\n", fp);
+		fclose(fp);
+
+		fopen_s(&fp, "password.txt", "a");
+		fputs("master1234!\n", fp);
+		fclose(fp);
+	}
+}
+
+int login() {
+	FILE* fp;
+	char id[17] = "";
+	char password[17] = "";
+	char ids[17] = "";
+	char passwords[17] = "";
+	int numOfId = getTotalLineId();
+
+	printf("------------------\n");
+	printf("enter your id: ");
+	fflush(stdin);
+	scanf_s("%s", &id, 17);
+	printf("enter your password: ");
+	fflush(stdin);
+	scanf_s("%s", &password, 17);
+
+	if (!strcmp("master", id) && !strcmp("master1234!", password)) {
+		printf("master id logged in\n");
+		printf("------------------\n\n");
+		return 3;
+	}
+
+	for (int i = 0; i < getTotalLineId(); i++) {
+		fopen_s(&fp, "id.txt", "r");
+		for (int j = 0; j < i + 2; j++)
+			fgets(ids, sizeof(ids), fp);
+		fclose(fp);
+
+		fopen_s(&fp, "password.txt", "r");
+		for (int j = 0; j < i + 2; j++)
+			fgets(passwords, sizeof(passwords), fp);
+		fclose(fp);
+
+		for (int j = 0; j < sizeof(ids) - 1; j++) {
+			if (ids[j] == '\n') {
+				ids[j] = '\0';
+				break;
+			}
+		}
+		for (int j = 0; j < sizeof(passwords) - 1; j++) {
+			if (passwords[j] == '\n') {
+				passwords[j] = '\0';
+				break;
+			}
+		}
+
+		if (!strcmp(ids, id) && !strcmp(passwords, password)) {
+			printf("logged in\n");
+			printf("------------------\n\n");
+			return 1;
+		}
+	}
+	printf("wrong id or password");
+	return 0;
+}
+
+void create_id() {
+	FILE* fp=NULL;
+	char id[17] = "";
+	char password[17] = "";
+	char col[16] = "";
+	char dupId[17] = "";
+	int duplicate = 1;
+
+	printf("------------------");
+
+	while (true) {
+		printf("\nenter your id: ");
+		fflush(stdin);
+		scanf_s("%s", &id, 17);
+		printf("enter your password: ");
+		fflush(stdin);
+		scanf_s("%s", &password, 17);
+		printf("this is collect (y or n or exit): ");
+		fflush(stdin);
+		scanf_s("%s", &col, 16);
+
+		fopen_s(&fp, "id.txt", "r");
+		for (int i = 0; i < getTotalLineId(); i++) {
+			fgets(dupId, sizeof(dupId), fp);
+			for (int j = 0; j < sizeof(dupId) - 1; j++) {
+				if (dupId[j] == '\n') {
+					dupId[j] = '\0';
+					break;
+				}
+			}
+			if (!strcmp(id, dupId)) {
+				duplicate = 0;
+				break;
+			}
+		}
+		fclose(fp);
+
+		if (!duplicate)
+			printf("duplicated id\n");
+		else if (!strcmp(col, "y") || !strcmp(col, "yes")) {
+			fopen_s(&fp, "id.txt", "a");
+			fputs(id, fp);
+			fputs("\n", fp);
+			fclose(fp);
+
+			fopen_s(&fp, "password.txt", "a");
+			fputs(password, fp);
+			fputs("\n", fp);
+			fclose(fp);
+			printf("created id\n");
+			printf("------------------\n\n");
+			return 1;
+		}
+		else if (!strcmp(col, "exit")) {
+			printf("------------------\n\n");
+			return 0;
+		}
+	}
+}
+
 int main() {
 	file_check();
+	id_file_check();
+	add_master_id();
 	rearrangement();
+
 	int num_of_student = getTotalLine();
 	int select = 0;
+	int logged = 0;
 
 	while (true) {
 		select = 0;
@@ -589,7 +747,10 @@ int main() {
 		printf("3. search student\n");
 		printf("4. find student\n");
 		printf("5. edit student(memo)\n");
-		printf("6. Exit\n");
+		printf("6. login\n");
+		printf("7. create id\n");
+		printf("8. log out\n");
+		printf("9. Exit\n");
 
 		num_of_student = getTotalLine();
 		if (num_of_student == 0)
@@ -599,22 +760,36 @@ int main() {
 		scanf_s("%d", &select);
 		printf("------------------\n\n");
 
-		if (select == 1)
+		if (select == 1 && logged == 1)
 			add_student();
-		else if (num_of_student == 0 && select != 1)
+		else if (!logged && select != 6 && select < 9)
+			printf("you should login\n\n");
+		else if (logged == 3 && select != 7 && select != 6 && select != 8)
+			printf("master id can only create id\n\n");
+		else if (num_of_student == 0 && select == 1)
 			printf("please enter again\nyou should add student\n\n");
-		else if (select == 2)
+		else if (logged && select == 6)
+			printf("you already logged in\n\n");
+		else if (logged != 3 && select == 7)
+			printf("create id can only master\n\n");
+		else if (select == 2 && logged == 1)
 			remove_student();
-		else if (select == 3)
+		else if (select == 3 && logged == 1)
 			search_student();
-		else if (select == 4)
+		else if (select == 4 && logged == 1)
 			find_student();
-		else if (select == 5)
+		else if (select == 5 && logged == 1)
 			edit_student();
 		else if (select == 6)
+			logged = login();
+		else if (select == 7 && logged == 3)
+			create_id();
+		else if (select == 8 && logged)
+			logged = 0;
+		else if (select == 9)
 			break;
 		else
-			printf("please enter again\n");
+			printf("please enter again\n\n");
 	}
 	return 0;
 }
