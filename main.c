@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
 
 // 추가 예정
 // 암호화
@@ -9,6 +10,13 @@
 #define buf_lenth 100
 // 저장 가능 정보 개수
 #define inf_num 7
+
+// 암호화에 필요한 것
+#define nomalStrDefine "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*-_=+, "
+#define numOfStr sizeof(nomalStrDefine)
+
+// 임시 키
+#define keyC " Vq*c1QXDv2djC@IyS+LnKJ3UxP-$0iuZ9Tw!b_,RgzWkM%sF=oYEfr6p4Bl85Ht7O^G#&AhNaem"
 
 // 학생 정보 구조체
 struct student_information
@@ -21,6 +29,65 @@ struct student_information
 	char adress[64];
 	char memo[1024];
 };
+
+// 암호화 복호화
+char* cryption(char* strPointer, char* keyAPointer, char* keyBPointer, int strSize) {
+	char str[1024] = "";
+	char reStr[numOfStr] = "";
+	char keyA[numOfStr] = "";
+	char keyB[numOfStr] = "";
+
+	// 포인터로 받아 문자열을 다시 만들기
+	for (int i = 0; i < strSize; i++) {
+		str[i] = *strPointer;
+		strPointer++;
+	}
+	for (int i = 0; i < (numOfStr - 1); i++) {
+		keyA[i] = *keyAPointer;
+		keyAPointer++;
+	}
+	for (int i = 0; i < (numOfStr - 1); i++) {
+		keyB[i] = *keyBPointer;
+		keyBPointer++;
+	}
+
+	// 암호화 복호화
+	int k = 0;
+	int i = 0;
+	while (str[k] != NULL) k++;
+	while (true) {
+		for (int j = 0; j < (numOfStr - 1); j++) {
+			if (str[i] == keyB[j]) {
+				reStr[i] = keyA[j];
+				i++;
+				break;
+			}
+		}
+		if (i == k)
+			break;
+	}
+	return reStr;
+}
+
+// 랜덤 키 생성
+char* rand_str() {
+	const char nomalStr[numOfStr] = nomalStrDefine;
+	char key[numOfStr] = "";
+	int random = 0;
+	srand(time(NULL));
+
+	int i = 0;
+	while (true) {
+		random = rand() % (numOfStr - 1);
+		if (key[random] == NULL) {
+			key[random] = nomalStr[i];
+			i++;
+		}
+		if (i == (numOfStr - 1))
+			break;
+	}
+	return key;
+}
 
 // 학생수 n명
 int getTotalLine() {
@@ -41,7 +108,7 @@ void save_student(struct student_information stu_inf) {
 	FILE* fp;
 	char student_inf[1024] = "";
 
-	sprintf_s(student_inf, sizeof(student_inf), "%d,%s,%d,%d,%s,%s, \n", getTotalLine() + 1, stu_inf.name, stu_inf.age, stu_inf.grade, stu_inf.phone, stu_inf.adress);
+	sprintf_s(student_inf, sizeof(student_inf), "%d,%s,%d,%d,%s,%s, ", getTotalLine() + 1, stu_inf.name, stu_inf.age, stu_inf.grade, stu_inf.phone, stu_inf.adress);
 	printf("\nsaved\n");
 	printf("number : %d\n", getTotalLine() + 1);
 	printf("name : %s\n", stu_inf.name);
@@ -51,8 +118,15 @@ void save_student(struct student_information stu_inf) {
 	printf("adress : %s\n", stu_inf.adress);
 	printf("------------------\n\n");
 
+	char* studentInfPointer = cryption(student_inf, keyC, nomalStrDefine, 1024);
+	for (int i = 0; i < sizeof(student_inf); i++) {
+		student_inf[i] = *studentInfPointer;
+		studentInfPointer++;
+	}
+
 	fopen_s(&fp, "student.txt", "a");
 	fputs(student_inf, fp);
+	fputs("\n", fp);
 	fclose(fp);
 }
 
@@ -113,7 +187,18 @@ int search_student() {
 				strcpy_s(next_page, sizeof(next_page), "n");
 				break;
 			}
-			printf("%s", buf);
+			for (int i = 0; i < sizeof(buf); i++) {
+				if (buf[i] == '\n') {
+					buf[i] = '\0';
+					break;
+				}
+			}
+			char* bufPointer = cryption(buf, nomalStrDefine, keyC, sizeof(buf));
+			for (int i = 0; i < sizeof(buf); i++) {
+				buf[i] = *bufPointer;
+				bufPointer++;
+			}
+			printf("%s\n", buf);
 			strcpy_s(ex_buf, sizeof(ex_buf), buf);
 		}
 		now_page++;
@@ -155,6 +240,19 @@ struct student_information read_student_information(int num) {
 	fopen_s(&fp, "student.txt", "r");
 	for (int i = 0; i < num; i++)
 		fgets(buf, sizeof(buf), fp);
+
+	for (int i = 0; i < sizeof(buf); i++) {
+		if (buf[i] == '\n') {
+			buf[i] = '\0';
+			break;
+		}
+	}
+
+	char* bufPointer = cryption(buf, nomalStrDefine, keyC, sizeof(buf));
+	for (int i = 0; i < sizeof(buf); i++) {
+		buf[i] = *bufPointer;
+		bufPointer++;
+	}
 
 	// 정보를 나누는 번호
 	// ,단위로 나뉜는 위치
@@ -211,14 +309,14 @@ struct student_information read_student_information(int num) {
 	stu_inf.phone[dir[d] - dir[d - 1] - 1] = NULL;
 	d++;
 
-	for (int i = 0; i < last_null - dir[d - 1] - 2; i++)
+	for (int i = 0; i < dir[d] - dir[d - 1] - 1; i++)
 		stu_inf.adress[i] = buf[i + dir[d - 1] + 1];
 	stu_inf.adress[dir[d] - dir[d - 1] - 1] = NULL;
 	d++;
 
-	for (int i = 0; i < last_null - dir[d - 1] - 2; i++)
+	for (int i = 0; i < last_null - dir[d - 1] - 1; i++)
 		stu_inf.memo[i] = buf[i + dir[d - 1] + 1];
-	stu_inf.memo[last_null - dir[d - 1] - 2] = NULL;
+	stu_inf.memo[last_null - dir[d - 1] - 1] = NULL;
 	d++;
 
 	fclose(fp);
@@ -226,26 +324,39 @@ struct student_information read_student_information(int num) {
 }
 
 // 재저장
-void resave(char buf[buf_lenth][1024]) {
+void resave(char buf[buf_lenth][1024], int num) {
 	FILE* fp;
-	int line = getTotalLine();
+	int line = getTotalLine() - num;
 	fopen_s(&fp, "student.txt", "w");
-	for (int i = 0; i < line; i++)
+	for (int i = 0; i < line; i++) {
+		for (int j = 0; j < sizeof(buf[i]); j++) {
+			if (buf[i][j] == '\n') {
+				buf[i][j] = '\0';
+				break;
+			}
+		}
+		char* bufPointer = cryption(buf[i], keyC, nomalStrDefine, sizeof(buf[i]));
+		for (int j = 0; j < sizeof(buf[i]); j++) {
+			buf[i][j] = *bufPointer;
+			bufPointer++;
+		}
 		fputs(buf[i], fp);
+		fputs("\n", fp);
+	}
 	fclose(fp);
 }
 
 // 학생 삭제시 번호 재배열
-void rearrangement() {
+void rearrangement(int num) {
 	struct student_information stu_inf;
 	int line = getTotalLine();
 	char buf[buf_lenth][1024];
 
-	for (int i = 0; i < line; i++) {
+	for (int i = 0; i < line-num; i++) {
 		stu_inf = read_student_information(i + 1);
-		sprintf_s(buf[i], sizeof(buf[i]), "%d,%s,%d,%d,%s,%s,%s\n", i + 1, stu_inf.name, stu_inf.age, stu_inf.grade, stu_inf.phone, stu_inf.adress, stu_inf.memo);
+		sprintf_s(buf[i], sizeof(buf[i]), "%d,%s,%d,%d,%s,%s,%s", i + 1, stu_inf.name, stu_inf.age, stu_inf.grade, stu_inf.phone, stu_inf.adress, stu_inf.memo);
 	}
-	resave(buf);
+	resave(buf, num);
 }
 
 // 학생 구조체를 받아 출력
@@ -510,12 +621,26 @@ void edit_student() {
 	}
 
 	fopen_s(&fp, "student.txt", "r");
-	for (int i = 0; i < getTotalLine(); i++)
+	for (int i = 0; i < getTotalLine(); i++) {
 		fgets(buf[i], sizeof(buf[i]), fp);
+
+		for (int j = 0; j < sizeof(buf[i]); j++) {
+			if (buf[i][j] == '\n') {
+				buf[i][j] = '\0';
+				break;
+			}
+		}
+
+		char* bufPointer = cryption(buf[i], nomalStrDefine, keyC, sizeof(buf[i]));
+		for (int j = 0; j < sizeof(buf[i]); j++) {
+			buf[i][j] = *bufPointer;
+			bufPointer++;
+		}
+	}
 	fclose(fp);
 
 	sprintf_s(buf[stu_inf.number - 1], sizeof(buf[stu_inf.number]), "%d,%s,%d,%d,%s,%s,%s\n", stu_inf.number, stu_inf.name, stu_inf.age, stu_inf.grade, stu_inf.phone, stu_inf.adress, stu_inf.memo);
-	resave(buf);
+	resave(buf, 0);
 	printf("saved\n");
 	printf("------------------\n\n");
 }
@@ -529,8 +654,21 @@ int remove_student() {
 	int num = 1;
 
 	fopen_s(&fp, "student.txt", "r");
-	for (int i = 0; i < getTotalLine(); i++)
+	for (int i = 0; i < getTotalLine(); i++) {
 		fgets(buf[i], sizeof(buf[i]), fp);
+		for (int j = 0; j < sizeof(buf[i]); j++) {
+			if (buf[i][j] == '\n') {
+				buf[i][j] = '\0';
+				break;
+			}
+		}
+
+		char* bufPointer = cryption(buf[i], nomalStrDefine, keyC, sizeof(buf[i]));
+		for (int j = 0; j < sizeof(buf[i]); j++) {
+			buf[i][j] = *bufPointer;
+			bufPointer++;
+		}
+	}
 	fclose(fp);
 
 	printf("------------------");
@@ -559,8 +697,8 @@ int remove_student() {
 			sprintf_s(buf[i], 1024, buf[i + 1]);
 		sprintf_s(buf[getTotalLine() - 1], 1024, "\0");
 
-		resave(buf);
-		rearrangement();
+		resave(buf, 0);
+		rearrangement(1);
 		printf("------------------\n\n");
 		return 1;
 	}
@@ -575,6 +713,9 @@ void file_check() {
 	fopen_s(&fp, "student.txt", "a");
 	fclose(fp);
 }
+
+
+// 암호화 추가
 
 // 아이디 갯수
 int getTotalLineId() {
@@ -671,7 +812,8 @@ int login() {
 			return 1;
 		}
 	}
-	printf("wrong id or password");
+	printf("wrong id or password\n");
+	printf("------------------\n\n");
 	return 0;
 }
 
@@ -685,7 +827,6 @@ void create_id() {
 	int duplicate = 1;
 
 	printf("------------------");
-
 	while (true) {
 		printf("\nenter your id (max lenth 16): ");
 		fflush(stdin);
@@ -740,7 +881,7 @@ void create_id() {
 int main() {
 	file_check();
 	id_file_check();
-	rearrangement();
+	rearrangement(0);
 
 	int num_of_student = getTotalLine();
 	int select = 0;
