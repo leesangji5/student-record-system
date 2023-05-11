@@ -1230,13 +1230,16 @@ int remove_id() {
 			if (!strcmp(id, idBuf[i]) && !strcmp(password, pwBuf[i]))
 				num = i;
 		}
+
+		// error ////////////////
 		for (int i = num; i < getTotalLineId() - num; i++)
 			strcpy_s(idBuf[i], 1024, idBuf[i + 1]);
 		strcpy_s(idBuf[getTotalLineId()-1], 1024, "");
+
 		for (int i = num; i < getTotalLineId() - num + 1; i++)
 			strcpy_s(pwBuf[i], 1024, pwBuf[i + 1]);
 		strcpy_s(pwBuf[getTotalLineId() - 1], 1024, "");
-
+		//////////////////////////////
 		if (!strcmp(col, "y") || !strcmp(col, "yes")) {
 			// 암호화
 			for (int i = 0; i < getTotalLineId() - 1; i++) {
@@ -1253,12 +1256,19 @@ int remove_id() {
 					pwBufPointer++;
 				}
 			}
+
+			for (int i = 0; i < getTotalLineId() - 1; i++) {
+				printf("%s %s\n", idBuf[i], pwBuf[i]);
+			}
+
+			int line = getTotalLineId();
+
 			fopen_s(&fp, "id.txt", "w");
-			for (int i = 0; i < getTotalLineId() - 1; i++)
+			for (int i = 0; i < line - 1; i++)
 				fputs(idBuf[i], fp);
 			fclose(fp);
 			fopen_s(&fp, "password.txt", "w");
-			for (int i = 0; i < getTotalLineId() - 1; i++)
+			for (int i = 0; i < line - 1; i++)
 				fputs(pwBuf[i], fp);
 			fclose(fp);
 		}
