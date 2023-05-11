@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 // 추가 예정
+// 기능 중복된 함수 제거
 
 // 기록 가능한 학생 수
 #define buf_lenth 100
