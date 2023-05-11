@@ -4,7 +4,6 @@
 #include <stdlib.h>
 
 // 추가 예정
-// 암호화
 
 // 기록 가능한 학생 수
 #define buf_lenth 100
@@ -14,9 +13,6 @@
 // 암호화에 필요한 것
 #define nomalStrDefine "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*-_=+, "
 #define numOfStr sizeof(nomalStrDefine)
-
-// 임시 키
-#define keyC " Vq*c1QXDv2djC@IyS+LnKJ3UxP-$0iuZ9Tw!b_,RgzWkM%sF=oYEfr6p4Bl85Ht7O^G#&AhNaem"
 
 // 학생 정보 구조체
 struct student_information
@@ -89,6 +85,178 @@ char* rand_str() {
 	return key;
 }
 
+// key 있는지 없는지
+int getTotalLinekey() {
+	FILE* fp = NULL;
+	errno_t err;
+	int line = 0;
+	char c;
+
+	fopen_s(&fp, "key.txt", "r");
+	while ((c = fgetc(fp)) != EOF)
+		if (c == '\n') line++;
+	fclose(fp);
+	return line;
+}
+
+// key없으면 추가
+void add_key() {
+	FILE* fp;
+	char key[numOfStr];
+	if (!getTotalLinekey()) {
+		fopen_s(&fp, "key.txt", "w");
+		char* keyPointer = rand_str();
+		for (int i = 0; i < sizeof(key); i++) {
+			key[i] = *keyPointer;
+			keyPointer++;
+		}
+		fputs(key, fp);
+		fputs("\n", fp);
+		fclose(fp);
+	}
+}
+
+// key 읽기
+char* read_key() {
+	FILE* fp;
+	char key[numOfStr];
+	fopen_s(&fp, "key.txt", "r");
+	fgets(key, sizeof(key), fp);
+	fclose(fp);
+	return key;
+}
+
+// key 변경
+void change_key() {
+	FILE* fp;
+	char buf[buf_lenth][1024];
+	char* bufPointer;
+	char key[numOfStr]="";
+	char newKey[numOfStr]="";
+	int line = getTotalLine();
+
+	char* keyPointer = read_key();
+	for (int j = 0; j < sizeof(key); j++) {
+		key[j] = *keyPointer;
+		keyPointer++;
+	}
+
+	char* newKeyPointer = rand_str();
+	for (int j = 0; j < sizeof(newKey); j++) {
+		newKey[j] = *newKeyPointer;
+		newKeyPointer++;
+	}
+
+	// 학생 정보 읽고 newkey로 변환
+	for (int i = 0; i < line; i++) {
+		fopen_s(&fp, "student.txt", "r");
+		strcpy_s(buf[i], sizeof(buf[i]), "");
+		for(int j=0; j<i+1; j++)
+			fgets(buf[i], sizeof(buf[i]), fp);
+		fclose(fp);
+		for (int j = 0; j < sizeof(buf[i]); j++) {
+			if (buf[i][j] == '\n') {
+				buf[i][j] = '\0';
+				break;
+			}
+		}
+
+		bufPointer = cryption(buf[i], nomalStrDefine, key, sizeof(buf[i]));
+		for (int j = 0; j < sizeof(buf[i]); j++) {
+			buf[i][j] = *bufPointer;
+			bufPointer++;
+		}
+
+		bufPointer = cryption(buf[i], newKey, nomalStrDefine, sizeof(buf[i]));
+		for (int j = 0; j < sizeof(buf[i]); j++) {
+			buf[i][j] = *bufPointer;
+			bufPointer++;
+		}
+	}
+
+	// 학생 정보 재저장
+	fopen_s(&fp, "student.txt", "w");
+	for (int i = 0; i < line; i++) {
+		fputs(buf[i], fp);
+		fputs("\n", fp);
+	}
+	fclose(fp);
+
+	char* idBufPointer;
+	char* pwBufPointer;
+	char idBuf[100][17];
+	char pwBuf[100][17];
+	int idline = getTotalLineId();
+
+	for (int i = 0; i < idline; i++) {
+		fopen_s(&fp, "id.txt", "r");
+		strcpy_s(idBuf[i], sizeof(idBuf[i]), "");
+		for (int j = 0; j < i + 1; j++)
+			fgets(idBuf[i], sizeof(idBuf[i]), fp);
+		fclose(fp);
+		for (int j = 0; j < sizeof(idBuf[i]); j++) {
+			if (idBuf[i][j] == '\n') {
+				idBuf[i][j] = '\0';
+				break;
+			}
+		}
+		idBufPointer = cryption(idBuf[i], nomalStrDefine, key, sizeof(idBuf[i]));
+		for (int j = 0; j < sizeof(idBuf[i]); j++) {
+			idBuf[i][j] = *idBufPointer;
+			idBufPointer++;
+		}
+
+		idBufPointer = cryption(idBuf[i], newKey, nomalStrDefine, sizeof(idBuf[i]));
+		for (int j = 0; j < sizeof(idBuf[i]); j++) {
+			idBuf[i][j] = *idBufPointer;
+			idBufPointer++;
+		}
+
+		fopen_s(&fp, "password.txt", "r");
+		strcpy_s(pwBuf[i], sizeof(pwBuf[i]), "");
+		for (int j = 0; j < i + 1; j++)
+			fgets(pwBuf[i], sizeof(pwBuf[i]), fp);
+		fclose(fp);
+		for (int j = 0; j < sizeof(pwBuf[i]); j++) {
+			if (pwBuf[i][j] == '\n') {
+				pwBuf[i][j] = '\0';
+				break;
+			}
+		}
+		pwBufPointer = cryption(pwBuf[i], nomalStrDefine, key, sizeof(pwBuf[i]));
+		for (int j = 0; j < sizeof(pwBuf[i]); j++) {
+			pwBuf[i][j] = *pwBufPointer;
+			pwBufPointer++;
+		}
+
+		pwBufPointer = cryption(pwBuf[i], newKey, nomalStrDefine, sizeof(pwBuf[i]));
+		for (int j = 0; j < sizeof(pwBuf[i]); j++) {
+			pwBuf[i][j] = *pwBufPointer;
+			pwBufPointer++;
+		}
+	}
+
+	// 학생 id, pw 재저장
+	fopen_s(&fp, "id.txt", "w");
+	for (int i = 0; i < idline; i++) {
+		fputs(idBuf[i], fp);
+		fputs("\n", fp);
+	}
+	fclose(fp);
+	fopen_s(&fp, "password.txt", "w");
+	for (int i = 0; i < idline; i++) {
+		fputs(pwBuf[i], fp);
+		fputs("\n", fp);
+	}
+	fclose(fp);
+
+	fopen_s(&fp, "key.txt", "w");
+	fputs(newKey, fp);
+	fputs("\n", fp);
+	fclose(fp);
+	printf("changed\nkey: %s", key);
+}
+
 // 학생수 n명
 int getTotalLine() {
 	FILE* fp = NULL;
@@ -108,6 +276,13 @@ void save_student(struct student_information stu_inf) {
 	FILE* fp;
 	char student_inf[1024] = "";
 
+	char key[numOfStr];
+	char* keyPointer = read_key();
+	for (int j = 0; j < sizeof(key); j++) {
+		key[j] = *keyPointer;
+		keyPointer++;
+	}
+
 	sprintf_s(student_inf, sizeof(student_inf), "%d,%s,%d,%d,%s,%s, ", getTotalLine() + 1, stu_inf.name, stu_inf.age, stu_inf.grade, stu_inf.phone, stu_inf.adress);
 	printf("\nsaved\n");
 	printf("number : %d\n", getTotalLine() + 1);
@@ -118,7 +293,7 @@ void save_student(struct student_information stu_inf) {
 	printf("adress : %s\n", stu_inf.adress);
 	printf("------------------\n\n");
 
-	char* studentInfPointer = cryption(student_inf, keyC, nomalStrDefine, 1024);
+	char* studentInfPointer = cryption(student_inf, key, nomalStrDefine, sizeof(student_inf));
 	for (int i = 0; i < sizeof(student_inf); i++) {
 		student_inf[i] = *studentInfPointer;
 		studentInfPointer++;
@@ -174,6 +349,13 @@ int search_student() {
 	int last_page = getTotalLine() / num;
 	int now_page = 0;
 
+	char key[numOfStr];
+	char* keyPointer = read_key();
+	for (int j = 0; j < sizeof(key); j++) {
+		key[j] = *keyPointer;
+		keyPointer++;
+	}
+
 	if (getTotalLine() % num != 0)
 		last_page = (getTotalLine() / num) + 1;
 
@@ -193,7 +375,7 @@ int search_student() {
 					break;
 				}
 			}
-			char* bufPointer = cryption(buf, nomalStrDefine, keyC, sizeof(buf));
+			char* bufPointer = cryption(buf, nomalStrDefine, key, sizeof(buf));
 			for (int i = 0; i < sizeof(buf); i++) {
 				buf[i] = *bufPointer;
 				bufPointer++;
@@ -237,6 +419,13 @@ struct student_information read_student_information(int num) {
 	struct student_information stu_inf;
 	char buf[1024];
 
+	char key[numOfStr];
+	char* keyPointer = read_key();
+	for (int j = 0; j < sizeof(key); j++) {
+		key[j] = *keyPointer;
+		keyPointer++;
+	}
+
 	fopen_s(&fp, "student.txt", "r");
 	for (int i = 0; i < num; i++)
 		fgets(buf, sizeof(buf), fp);
@@ -248,7 +437,7 @@ struct student_information read_student_information(int num) {
 		}
 	}
 
-	char* bufPointer = cryption(buf, nomalStrDefine, keyC, sizeof(buf));
+	char* bufPointer = cryption(buf, nomalStrDefine, key, sizeof(buf));
 	for (int i = 0; i < sizeof(buf); i++) {
 		buf[i] = *bufPointer;
 		bufPointer++;
@@ -326,6 +515,12 @@ struct student_information read_student_information(int num) {
 // 재저장
 void resave(char buf[buf_lenth][1024], int num) {
 	FILE* fp;
+	char key[numOfStr];
+	char* keyPointer = read_key();
+	for (int j = 0; j < sizeof(key); j++) {
+		key[j] = *keyPointer;
+		keyPointer++;
+	}
 	int line = getTotalLine() - num;
 	fopen_s(&fp, "student.txt", "w");
 	for (int i = 0; i < line; i++) {
@@ -335,7 +530,7 @@ void resave(char buf[buf_lenth][1024], int num) {
 				break;
 			}
 		}
-		char* bufPointer = cryption(buf[i], keyC, nomalStrDefine, sizeof(buf[i]));
+		char* bufPointer = cryption(buf[i], key, nomalStrDefine, sizeof(buf[i]));
 		for (int j = 0; j < sizeof(buf[i]); j++) {
 			buf[i][j] = *bufPointer;
 			bufPointer++;
@@ -352,7 +547,7 @@ void rearrangement(int num) {
 	int line = getTotalLine();
 	char buf[buf_lenth][1024];
 
-	for (int i = 0; i < line-num; i++) {
+	for (int i = 0; i < line - num; i++) {
 		stu_inf = read_student_information(i + 1);
 		sprintf_s(buf[i], sizeof(buf[i]), "%d,%s,%d,%d,%s,%s,%s", i + 1, stu_inf.name, stu_inf.age, stu_inf.grade, stu_inf.phone, stu_inf.adress, stu_inf.memo);
 	}
@@ -565,6 +760,13 @@ void edit_student() {
 	int grade = 0;
 	int number;
 
+	char key[numOfStr];
+	char* keyPointer = read_key();
+	for (int j = 0; j < sizeof(key); j++) {
+		key[j] = *keyPointer;
+		keyPointer++;
+	}
+
 	printf("------------------");
 	while (true) {
 		printf("\nstudent number: ");
@@ -631,7 +833,7 @@ void edit_student() {
 			}
 		}
 
-		char* bufPointer = cryption(buf[i], nomalStrDefine, keyC, sizeof(buf[i]));
+		char* bufPointer = cryption(buf[i], nomalStrDefine, key, sizeof(buf[i]));
 		for (int j = 0; j < sizeof(buf[i]); j++) {
 			buf[i][j] = *bufPointer;
 			bufPointer++;
@@ -653,6 +855,13 @@ int remove_student() {
 	char answer[64];
 	int num = 1;
 
+	char key[numOfStr];
+	char* keyPointer = read_key();
+	for (int j = 0; j < sizeof(key); j++) {
+		key[j] = *keyPointer;
+		keyPointer++;
+	}
+
 	fopen_s(&fp, "student.txt", "r");
 	for (int i = 0; i < getTotalLine(); i++) {
 		fgets(buf[i], sizeof(buf[i]), fp);
@@ -663,7 +872,7 @@ int remove_student() {
 			}
 		}
 
-		char* bufPointer = cryption(buf[i], nomalStrDefine, keyC, sizeof(buf[i]));
+		char* bufPointer = cryption(buf[i], nomalStrDefine, key, sizeof(buf[i]));
 		for (int j = 0; j < sizeof(buf[i]); j++) {
 			buf[i][j] = *bufPointer;
 			bufPointer++;
@@ -706,17 +915,6 @@ int remove_student() {
 	return 0;
 }
 
-// 파일 있는지 확인 후 없으면 생성
-void file_check() {
-	FILE* fp;
-
-	fopen_s(&fp, "student.txt", "a");
-	fclose(fp);
-}
-
-
-// 암호화 추가
-
 // 아이디 갯수
 int getTotalLineId() {
 	FILE* fp = NULL;
@@ -734,27 +932,35 @@ int getTotalLineId() {
 // 마스터 아이디 추가
 void add_master_id() {
 	FILE* fp;
+	char id[7] = "master";
+	char password[12] = "master1234!";
+	char key[numOfStr];
+	char* keyPointer = read_key();
+	for (int j = 0; j < sizeof(key); j++) {
+		key[j] = *keyPointer;
+		keyPointer++;
+	}
 	if (!getTotalLineId()) {
 		fopen_s(&fp, "id.txt", "a");
-		fputs("master\n", fp);
+		char* idPointer = cryption(id, key, nomalStrDefine, sizeof(id));
+		for (int i = 0; i < sizeof(id); i++) {
+			id[i] = *idPointer;
+			idPointer++;
+		}
+		fputs(id, fp);
+		fputs("\n", fp);
 		fclose(fp);
 
 		fopen_s(&fp, "password.txt", "a");
-		fputs("master1234!\n", fp);
+		char* passwordPointer = cryption(password, key, nomalStrDefine, sizeof(password));
+		for (int i = 0; i < sizeof(password); i++) {
+			password[i] = *passwordPointer;
+			passwordPointer++;
+		}
+		fputs(password, fp);
+		fputs("\n", fp);
 		fclose(fp);
 	}
-}
-
-// 아이디, 비번 파일 확인
-void id_file_check() {
-	FILE* fp;
-
-	fopen_s(&fp, "id.txt", "a");
-	fclose(fp);
-
-	fopen_s(&fp, "password.txt", "a");
-	fclose(fp);
-	add_master_id();
 }
 
 // 로그인
@@ -765,6 +971,12 @@ int login() {
 	char ids[17] = "";
 	char passwords[17] = "";
 	int numOfId = getTotalLineId();
+	char key[numOfStr];
+	char* keyPointer = read_key();
+	for (int j = 0; j < sizeof(key); j++) {
+		key[j] = *keyPointer;
+		keyPointer++;
+	}
 
 	printf("------------------\n");
 	printf("enter your id: ");
@@ -784,13 +996,37 @@ int login() {
 	// 일반 아이디 로그인
 	for (int i = 0; i < getTotalLineId(); i++) {
 		fopen_s(&fp, "id.txt", "r");
-		for (int j = 0; j < i + 2; j++)
+		for (int j = 0; j < i + 2; j++) {
 			fgets(ids, sizeof(ids), fp);
+			for (int k = 0; k < sizeof(ids); k++) {
+				if (ids[k] == '\n') {
+					ids[k] = '\0';
+					break;
+				}
+			}
+			char* idsPointer = cryption(ids, nomalStrDefine, key, sizeof(ids));
+			for (int i = 0; i < sizeof(ids); i++) {
+				ids[i] = *idsPointer;
+				idsPointer++;
+			}
+		}
 		fclose(fp);
 
 		fopen_s(&fp, "password.txt", "r");
-		for (int j = 0; j < i + 2; j++)
+		for (int j = 0; j < i + 2; j++) {
 			fgets(passwords, sizeof(passwords), fp);
+			for (int k = 0; k < sizeof(passwords); k++) {
+				if (passwords[k] == '\n') {
+					passwords[k] = '\0';
+					break;
+				}
+			}
+			char* passwordsPointer = cryption(passwords, nomalStrDefine, key, sizeof(passwords));
+			for (int i = 0; i < sizeof(passwords); i++) {
+				passwords[i] = *passwordsPointer;
+				passwordsPointer++;
+			}
+		}
 		fclose(fp);
 
 		for (int j = 0; j < sizeof(ids) - 1; j++) {
@@ -819,12 +1055,18 @@ int login() {
 
 // 아이디 생성
 void create_id() {
-	FILE* fp=NULL;
+	FILE* fp = NULL;
 	char id[17] = "";
 	char password[17] = "";
 	char col[16] = "";
 	char dupId[17] = "";
 	int duplicate = 1;
+	char key[numOfStr];
+	char* keyPointer = read_key();
+	for (int j = 0; j < sizeof(key); j++) {
+		key[j] = *keyPointer;
+		keyPointer++;
+	}
 
 	printf("------------------");
 	while (true) {
@@ -848,6 +1090,11 @@ void create_id() {
 					break;
 				}
 			}
+			char* dupIdPointer = cryption(dupId, nomalStrDefine, key, sizeof(dupId));
+			for (int i = 0; i < sizeof(dupId); i++) {
+				dupId[i] = *dupIdPointer;
+				dupIdPointer++;
+			}
 			if (!strcmp(id, dupId)) {
 				duplicate = 0;
 				break;
@@ -859,14 +1106,25 @@ void create_id() {
 			printf("duplicated id\n");
 		else if (!strcmp(col, "y") || !strcmp(col, "yes")) {
 			fopen_s(&fp, "id.txt", "a");
+			char* idPointer = cryption(id, key, nomalStrDefine, sizeof(id));
+			for (int i = 0; i < sizeof(id); i++) {
+				id[i] = *idPointer;
+				idPointer++;
+			}
 			fputs(id, fp);
 			fputs("\n", fp);
 			fclose(fp);
 
 			fopen_s(&fp, "password.txt", "a");
+			char* passwordPointer = cryption(password, key, nomalStrDefine, sizeof(password));
+			for (int i = 0; i < sizeof(password); i++) {
+				password[i] = *passwordPointer;
+				passwordPointer++;
+			}
 			fputs(password, fp);
 			fputs("\n", fp);
 			fclose(fp);
+
 			printf("created id\n");
 			printf("------------------\n\n");
 			return 1;
@@ -878,9 +1136,30 @@ void create_id() {
 	}
 }
 
+// 파일 확인 학생, 아이디, 비번, key 
+void all_file_check() {
+	FILE* fp;
+
+	fopen_s(&fp, "student.txt", "a");
+	fclose(fp);
+
+	fopen_s(&fp, "student.txt", "a");
+	fclose(fp);
+
+	fopen_s(&fp, "id.txt", "a");
+	fclose(fp);
+	add_master_id();
+
+	fopen_s(&fp, "password.txt", "a");
+	fclose(fp);
+
+	fopen_s(&fp, "key.txt", "a");
+	fclose(fp);
+	add_key();
+}
+
 int main() {
-	file_check();
-	id_file_check();
+	all_file_check();
 	rearrangement(0);
 
 	int num_of_student = getTotalLine();
@@ -899,7 +1178,8 @@ int main() {
 		printf("6. login\n");
 		printf("7. create id\n");
 		printf("8. log out\n");
-		printf("9. Exit\n");
+		printf("9. key change\n");
+		printf("10. Exit\n");
 
 		num_of_student = getTotalLine();
 		if (num_of_student == 0)
@@ -911,9 +1191,9 @@ int main() {
 
 		if (select == 1 && logged == 1)
 			add_student();
-		else if (!logged && select != 6 && select < 9)
+		else if (!logged && select != 6 && select < 10)
 			printf("you should login\n\n");
-		else if (logged == 3 && select != 7 && select != 6 && select != 9)
+		else if (logged == 3 && select != 7 && select != 8 && select != 10)
 			printf("master id can only create id\n\n");
 		else if (num_of_student == 0 && select == 1)
 			printf("please enter again\nyou should add student\n\n");
@@ -933,6 +1213,8 @@ int main() {
 			logged = login();
 		else if (select == 7 && logged == 3)
 			create_id();
+		else if (select == 9 && logged == 3)
+			change_key();
 		else if (select == 8 && logged)
 			logged = 0;
 		else if (select == 9)
