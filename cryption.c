@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 #define numOfStr 77
 #define nomalStrDefine "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*-_=+, "
 
@@ -24,6 +27,27 @@ char* cryption(char* strPointer, char* keyAPointer, char* keyBPointer, int strSi
 	}
 	// 암호화 복호화
 	int k = 0;
+	int i = 0;
+	while (str[k] != NULL) k++;
+	while (true) {
+		for (int j = 0; j < (numOfStr - 1); j++) {
+			if (str[i] == keyB[j]) {
+				reStr[i] = keyA[j];
+				i++;
+				break;
+			}
+		}
+		if (i == k)
+			break;
+	}
+	return reStr;
+}
+char *rand_str() {
+	const char nomalStr[numOfStr] = nomalStrDefine;
+	char key[numOfStr] = "";
+	int random = 0;
+	srand(time(NULL));
+	int i = 0;
 	while (true) {
 		random = rand() % (numOfStr-1);
 		if (key[random] == NULL) {
