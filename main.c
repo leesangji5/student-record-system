@@ -1308,7 +1308,7 @@ int main() {
 
 	int num_of_student = getTotalLine();
 	int select = 0;
-	int logged = 3;
+	int logged = 0;
 
 	while (true) {
 		select = 0;
