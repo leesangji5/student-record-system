@@ -1172,7 +1172,7 @@ int remove_id() {
 	// 키 불러오기
 	char key[numOfStr];
 	char* keyPointer = read_key();
-	int num=0;
+	int num = 0;
 	for (int j = 0; j < sizeof(key); j++) {
 		key[j] = *keyPointer;
 		keyPointer++;
@@ -1214,7 +1214,7 @@ int remove_id() {
 	}
 	fclose(fp);
 
-	printf("------------------");
+	printf("\n------------------");
 	while (true) {
 		printf("\nenter remove id (max lenth 16): ");
 		fflush(stdin);
@@ -1230,16 +1230,18 @@ int remove_id() {
 			if (!strcmp(id, idBuf[i]) && !strcmp(password, pwBuf[i]))
 				num = i;
 		}
-
-		// error ////////////////
+		if (num == 0)
+			continue;
+		
 		for (int i = num; i < getTotalLineId() - num; i++)
 			strcpy_s(idBuf[i], 1024, idBuf[i + 1]);
-		strcpy_s(idBuf[getTotalLineId()-1], 1024, "");
+		strcpy_s(idBuf[getTotalLineId() - 1], 1024, "");
 
-		for (int i = num; i < getTotalLineId() - num + 1; i++)
+		for (int i = num; i < getTotalLineId() - num; i++) {
 			strcpy_s(pwBuf[i], 1024, pwBuf[i + 1]);
+		}
 		strcpy_s(pwBuf[getTotalLineId() - 1], 1024, "");
-		//////////////////////////////
+
 		if (!strcmp(col, "y") || !strcmp(col, "yes")) {
 			// 암호화
 			for (int i = 0; i < getTotalLineId() - 1; i++) {
@@ -1257,20 +1259,23 @@ int remove_id() {
 				}
 			}
 
-			for (int i = 0; i < getTotalLineId() - 1; i++) {
-				printf("%s %s\n", idBuf[i], pwBuf[i]);
-			}
-
 			int line = getTotalLineId();
 
 			fopen_s(&fp, "id.txt", "w");
-			for (int i = 0; i < line - 1; i++)
+			for (int i = 0; i < line - 1; i++) {
 				fputs(idBuf[i], fp);
+				fputs("\n", fp);
+			}
 			fclose(fp);
 			fopen_s(&fp, "password.txt", "w");
-			for (int i = 0; i < line - 1; i++)
+			for (int i = 0; i < line - 1; i++) {
 				fputs(pwBuf[i], fp);
+				fputs("\n", fp);
+			}
 			fclose(fp);
+			printf("removed id");
+			printf("------------------\n\n");
+			break;
 		}
 	}
 }
